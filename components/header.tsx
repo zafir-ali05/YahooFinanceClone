@@ -220,5 +220,3 @@ const textShadowStyle = `
 
 export const headerStyles = textShadowStyle
 
-export { Header, getCompanyName }
-
