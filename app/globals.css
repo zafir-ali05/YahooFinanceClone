@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Minimalistic Scrollbar Styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #bdbdbd #e0e0e0;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #e0e0e0;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #bdbdbd;
+  border-radius: 20px;
+  border: 2px solid #e0e0e0;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background-color: #a0a0a0;
+}
+
