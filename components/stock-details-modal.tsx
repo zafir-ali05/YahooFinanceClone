@@ -23,6 +23,7 @@ interface StockDetailsModalProps {
     volume: number
     updated: number
   }
+  portfolioShares: number
 }
 
 export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: StockDetailsModalProps) {

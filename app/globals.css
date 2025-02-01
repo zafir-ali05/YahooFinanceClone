@@ -26,3 +26,14 @@
   background-color: #a0a0a0;
 }
 
+/* Ensure rounded corners are applied consistently */
+.rounded-lg,
+.rounded-md {
+  border-radius: 0.5rem;
+}
+
+/* Ensure proper overflow handling for rounded elements */
+.overflow-hidden {
+  overflow: hidden;
+}
+

@@ -113,14 +113,14 @@ export function Header() {
           <span className="text-2xl font-extrabold italic text-shadow">Stoxly</span>
         </Link>
 
-        <div className="rounded-3x1 relative flex w-full max-w-sm items-center space-x-2 mx-4">
+        <div className="relative flex w-full max-w-sm items-center space-x-2 mx-4">
           <div className="relative w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               ref={inputRef}
               type="search"
               placeholder="Search symbol or company..."
-              className="pl-8 bg-white text-black"
+              className="pl-8 bg-white text-black rounded-md w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsDropdownVisible(true)}
@@ -180,7 +180,7 @@ export function Header() {
         </nav>
       </div>
       {selectedStock && (
-        <StockDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} stock={selectedStock} />
+        <StockDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} stock={selectedStock} portfolioShares={0} />
       )}
     </header>
   )
