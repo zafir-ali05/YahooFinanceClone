@@ -251,6 +251,16 @@ export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: Stoc
             </div>
           </div>
         </div>
+        <style jsx global>{`
+          .rounded-[40px] > :first-child {
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+          }
+          .rounded-[40px] > :last-child {
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+          }
+        `}</style>
       </DialogContent>
     </Dialog>
   )
