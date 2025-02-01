@@ -61,7 +61,7 @@ export function StockCard({ symbol, name, onWatchlistToggle, isInWatchlist = fal
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border bg-white/20 p-4 animate-pulse">
+      <div className="rounded-3x1 border bg-white/20 p-4 animate-pulse">
         <div className="h-16"></div>
       </div>
     )
@@ -75,7 +75,7 @@ export function StockCard({ symbol, name, onWatchlistToggle, isInWatchlist = fal
   return (
     <>
       <div
-        className="rounded-lg border bg-white/20 p-4 hover:bg-white/30 transition-colors cursor-pointer overflow-hidden"
+        className="rounded-3x1 border bg-white/20 p-4 hover:bg-white/30 transition-colors cursor-pointer overflow-hidden"
         onClick={handleCardClick}
       >
         <div className="flex justify-between items-start">
