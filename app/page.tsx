@@ -27,6 +27,34 @@ const STOCK_SYMBOLS = [
   "DIS",
   "CSCO",
   "VZ",
+  "WMT",
+  "KO",
+  "PEP",
+  "INTC",
+  "AMD",
+  "ORCL",
+  "IBM",
+  "QCOM",
+  "TXN",
+  "PYPL",
+  "COST",
+  "NKE",
+  "MCD",
+  "SBUX",
+  "BA",
+  "CAT",
+  "GS",
+  "MS",
+  "C",
+  "BAC",
+  "XOM",
+  "CVX",
+  "WFC",
+  "T",
+  "CMCSA",
+  "ADSK",
+  "INTU",
+  "NOW",
 ]
 
 interface StockData {
@@ -111,7 +139,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="container px-4 py-8">
-        <div className="text-white text-2xl">Loading...</div>
+        <div className="text-black text-2xl">Loading...</div>
       </div>
     )
   }
@@ -122,7 +150,7 @@ export default function Home() {
 
       <section className="rounded-3xl bg-[#E85D4C] p-8">
         <h2 className="text-2xl font-bold text-white mb-4">Most Active</h2>
-        <div className="rounded-3x1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {stocks.slice(0, 6).map((stock) => (
             <StockCard
               key={stock.symbol}
@@ -136,7 +164,7 @@ export default function Home() {
 
       <section className="rounded-3xl bg-[#E85D4C] p-8">
         <h2 className="text-2xl font-bold text-white mb-4">Top Gainers</h2>
-        <div className="rounded-3x1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {topGainers.map((stock) => (
             <StockCard
               key={stock.symbol}
@@ -150,7 +178,7 @@ export default function Home() {
 
       <section className="rounded-3xl bg-[#E85D4C] p-8">
         <h2 className="text-2xl font-bold text-white mb-4">Top Losers</h2>
-        <div className="rounded-3x1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {topLosers.map((stock) => (
             <StockCard
               key={stock.symbol}

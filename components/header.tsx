@@ -34,6 +34,34 @@ const STOCK_SYMBOLS = [
   "DIS",
   "CSCO",
   "VZ",
+  "WMT",
+  "KO",
+  "PEP",
+  "INTC",
+  "AMD",
+  "ORCL",
+  "IBM",
+  "QCOM",
+  "TXN",
+  "PYPL",
+  "COST",
+  "NKE",
+  "MCD",
+  "SBUX",
+  "BA",
+  "CAT",
+  "GS",
+  "MS",
+  "C",
+  "BAC",
+  "XOM",
+  "CVX",
+  "WFC",
+  "T",
+  "CMCSA",
+  "ADSK",
+  "INTU",
+  "NOW",
 ]
 
 export function Header() {
@@ -180,7 +208,12 @@ export function Header() {
         </nav>
       </div>
       {selectedStock && (
-        <StockDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} stock={selectedStock} portfolioShares={0} />
+        <StockDetailsModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          stock={selectedStock}
+          portfolioShares={0}
+        />
       )}
     </header>
   )
@@ -208,6 +241,34 @@ export function getCompanyName(symbol: string): string {
     DIS: "The Walt Disney Company",
     CSCO: "Cisco Systems Inc.",
     VZ: "Verizon Communications Inc.",
+    WMT: "Walmart Inc.",
+    KO: "The Coca-Cola Company",
+    PEP: "PepsiCo Inc.",
+    INTC: "Intel Corporation",
+    AMD: "Advanced Micro Devices Inc.",
+    ORCL: "Oracle Corporation",
+    IBM: "International Business Machines Corporation",
+    QCOM: "Qualcomm Inc.",
+    TXN: "Texas Instruments Inc.",
+    PYPL: "PayPal Holdings Inc.",
+    COST: "Costco Wholesale Corporation",
+    NKE: "Nike Inc.",
+    MCD: "McDonald's Corporation",
+    SBUX: "Starbucks Corporation",
+    BA: "The Boeing Company",
+    CAT: "Caterpillar Inc.",
+    GS: "The Goldman Sachs Group Inc.",
+    MS: "Morgan Stanley",
+    C: "Citigroup Inc.",
+    BAC: "Bank of America Corporation",
+    XOM: "Exxon Mobil Corporation",
+    CVX: "Chevron Corporation",
+    WFC: "Wells Fargo & Company",
+    T: "AT&T Inc.",
+    CMCSA: "Comcast Corporation",
+    ADSK: "Autodesk Inc.",
+    INTU: "Intuit Inc.",
+    NOW: "ServiceNow Inc.",
   }
   return companies[symbol] || symbol
 }
@@ -219,4 +280,5 @@ const textShadowStyle = `
 `
 
 export const headerStyles = textShadowStyle
+
 
