@@ -1,4 +1,4 @@
-//const API_KEY = "a3MwQVg1Q0M0dUtGb3FqUDgxZXIyVDE2a3V0Q3pwYXBKblhoVlhwRVNvbz0"
+const API_KEY = "a3MwQVg1Q0M0dUtGb3FqUDgxZXIyVDE2a3V0Q3pwYXBKblhoVlhwRVNvbz0"
 const API_BASE_URL = "https://api.marketdata.app/v1/stocks/quotes"
 const WS_BASE_URL = "wss://api.marketdata.app/v1/stocks/quotes/realtime"
 

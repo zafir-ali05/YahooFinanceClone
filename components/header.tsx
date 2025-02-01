@@ -113,7 +113,7 @@ export function Header() {
           <span className="text-2xl font-extrabold italic text-shadow">Stoxly</span>
         </Link>
 
-        <div className="relative flex w-full max-w-sm items-center space-x-2 mx-4">
+        <div className="rounded-3x1 relative flex w-full max-w-sm items-center space-x-2 mx-4">
           <div className="relative w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
             <Input
