@@ -118,7 +118,7 @@ export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: Stoc
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[900px] bg-[#c96357] text-white border-none overflow-hidden rounded-3xl">
+      <DialogContent className="sm:max-w-[900px] bg-[#c96357] text-white border-none overflow-hidden rounded-xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex flex-col">

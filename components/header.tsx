@@ -148,7 +148,7 @@ export function Header() {
               ref={inputRef}
               type="search"
               placeholder="Search symbol or company..."
-              className="pl-8 bg-white text-black rounded-md w-full"
+              className="pl-8 bg-white text-black rounded-xl w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsDropdownVisible(true)}
@@ -157,7 +157,7 @@ export function Header() {
           {isDropdownVisible && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden z-50 max-h-60 overflow-y-auto"
+              className="absolute top-full left-0 w-full mt-1 bg-white rounded-xl shadow-lg overflow-hidden z-50 max-h-60 overflow-y-auto"
             >
               {searchResults.length > 0 ? (
                 searchResults.map((result) => (
