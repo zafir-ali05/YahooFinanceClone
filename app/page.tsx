@@ -1,103 +1,36 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { StockCard } from "@/components/stock-card"
 import { useWatchlist } from "@/contexts/WatchlistContext"
-import { getStockQuote, subscribeToRealtimeUpdates, unsubscribeFromRealtimeUpdates } from "@/services/stockService"
-
-// List of stock symbols to fetch
-const STOCK_SYMBOLS = [
-  "AAPL",
-  "MSFT",
-  "GOOGL",
-  "AMZN",
-  "NVDA",
-  "META",
-  "TSLA",
-  "JPM",
-  "V",
-  "PG",
-  "JNJ",
-  "UNH",
-  "MA",
-  "HD",
-  "ADBE",
-  "CRM",
-  "NFLX",
-  "DIS",
-  "CSCO",
-  "VZ",
-  "WMT",
-  "KO",
-  "PEP",
-  "INTC",
-  "AMD",
-  "ORCL",
-  "IBM",
-  "QCOM",
-  "TXN",
-  "PYPL",
-  "COST",
-  "NKE",
-  "MCD",
-  "SBUX",
-  "BA",
-  "CAT",
-  "GS",
-  "MS",
-  "C",
-  "BAC",
-  "XOM",
-  "CVX",
-  "WFC",
-  "T",
-  "CMCSA",
-  "ADSK",
-  "INTU",
-  "NOW",
-]
-
-interface StockData {
-  symbol: string
-  name: string
-  price: number
-  change: number
-  marketCap: number
-  volume: number
-  avgVolume: number
-  peRatio: number
-  dividend: number
-  yield: number
-}
+import { getWatchlistStocks, getTopIndices, type StockQuote, type IndexQuote } from "@/services/stockService"
+import { PageTransition } from "@/components/page-transition"
+import { AnimatedStockSection } from "@/components/animated-stock-section"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function Home() {
   const { toggleWatchlist, isInWatchlist } = useWatchlist()
-  const [stocks, setStocks] = useState<StockData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [topIndices, setTopIndices] = useState<IndexQuote[]>([])
+  const [mostActive, setMostActive] = useState<StockQuote[]>([])
+  const [topGainers, setTopGainers] = useState<StockQuote[]>([])
+  const [topLosers, setTopLosers] = useState<StockQuote[]>([])
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isInitialLoad, setIsInitialLoad] = useState(true)
 
   useEffect(() => {
     const fetchStockData = async () => {
-      setIsLoading(true)
       try {
-        const stockData = await Promise.all(
-          STOCK_SYMBOLS.map(async (symbol) => {
-            const quote = await getStockQuote(symbol)
-            return {
-              symbol,
-              name: symbol, // Replace with actual company name if available
-              price: quote.last[0],
-              change: ((quote.last[0] - quote.mid[0]) / quote.mid[0]) * 100,
-              marketCap: 0,
-              volume: quote.volume[0],
-              avgVolume: 0,
-              peRatio: 0,
-              dividend: 0,
-              yield: 0,
-            }
-          }),
-        )
-        setStocks(stockData)
+        const [indicesData, activeData, gainersData, losersData] = await Promise.all([
+          getTopIndices(),
+          getWatchlistStocks(["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META"]),
+          getWatchlistStocks(["TSLA", "AMD", "INTC"]),
+          getWatchlistStocks(["FB", "NFLX", "TWTR"]),
+        ])
+
+        setTopIndices(indicesData)
+        setMostActive(activeData)
+        setTopGainers(gainersData.sort((a, b) => b.changePercent - a.changePercent))
+        setTopLosers(losersData.sort((a, b) => a.changePercent - b.changePercent))
         setLastUpdated(new Date())
         setIsLoading(false)
       } catch (error) {
@@ -107,89 +40,89 @@ export default function Home() {
     }
 
     fetchStockData()
-
-    const unsubscribe = subscribeToRealtimeUpdates(STOCK_SYMBOLS, (data) => {
-      setStocks((prevStocks) => {
-        const updatedStocks = prevStocks.map((stock) => {
-          if (stock.symbol === data.symbol[0]) {
-            return {
-              ...stock,
-              price: data.last[0],
-              change: ((data.last[0] - data.mid[0]) / data.mid[0]) * 100,
-              volume: data.volume[0],
-            }
-          }
-          return stock
-        })
-        return updatedStocks
-      })
-      setLastUpdated(new Date())
-    })
-
-    return () => {
-      unsubscribe()
-      unsubscribeFromRealtimeUpdates()
-    }
   }, [])
 
-  const sortedStocks = [...stocks].sort((a, b) => b.change - a.change)
-  const topGainers = sortedStocks.slice(0, 3)
-  const topLosers = sortedStocks.slice(-3).reverse()
-
-  if (isLoading) {
-    return (
-      <div className="container px-4 py-8">
-        <div className="text-black text-2xl">Loading...</div>
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!isLoading) {
+      setIsInitialLoad(false)
+    }
+  }, [isLoading])
 
   return (
-    <div className="container px-4 py-8 space-y-8">
-      {lastUpdated && <div className="text-black text-sm">Last updated: {lastUpdated.toLocaleString()}</div>}
+    <PageTransition>
+      <AnimatePresence mode="wait">
+        {isInitialLoad ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="container px-4 py-8 space-y-8"
+          >
+            {[0, 1, 2, 3].map((index) => (
+              <motion.div
+                key={index}
+                className="rounded-3xl bg-gray-100 p-8 h-64"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: index * 0.3 }}
+              >
+                <div className="h-6 w-1/3 bg-gray-200 rounded mb-4"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(6)].map((_, idx) => (
+                    <div key={idx} className="h-16 bg-white rounded border border-gray-200"></div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+            className="container px-4 py-8 space-y-8"
+          >
+            {lastUpdated && <div className="text-gray-700 text-sm">Last updated: {lastUpdated.toLocaleString()}</div>}
 
-      <section className="rounded-3xl bg-[#E85D4C] p-8">
-        <h2 className="text-2xl font-bold text-white mb-4">Most Active</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {stocks.slice(0, 6).map((stock) => (
-            <StockCard
-              key={stock.symbol}
-              {...stock}
-              onWatchlistToggle={toggleWatchlist}
-              isInWatchlist={isInWatchlist(stock.symbol)}
+            <AnimatedStockSection
+              title="Top Indices"
+              stocks={topIndices}
+              toggleWatchlist={toggleWatchlist}
+              isInWatchlist={isInWatchlist}
+              index={0}
             />
-          ))}
-        </div>
-      </section>
 
-      <section className="rounded-3xl bg-[#E85D4C] p-8">
-        <h2 className="text-2xl font-bold text-white mb-4">Top Gainers</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {topGainers.map((stock) => (
-            <StockCard
-              key={stock.symbol}
-              {...stock}
-              onWatchlistToggle={toggleWatchlist}
-              isInWatchlist={isInWatchlist(stock.symbol)}
+            <AnimatedStockSection
+              title="Most Active"
+              stocks={mostActive}
+              toggleWatchlist={toggleWatchlist}
+              isInWatchlist={isInWatchlist}
+              index={1}
             />
-          ))}
-        </div>
-      </section>
 
-      <section className="rounded-3xl bg-[#E85D4C] p-8">
-        <h2 className="text-2xl font-bold text-white mb-4">Top Losers</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {topLosers.map((stock) => (
-            <StockCard
-              key={stock.symbol}
-              {...stock}
-              onWatchlistToggle={toggleWatchlist}
-              isInWatchlist={isInWatchlist(stock.symbol)}
+            <AnimatedStockSection
+              title="Top Gainers"
+              stocks={topGainers}
+              toggleWatchlist={toggleWatchlist}
+              isInWatchlist={isInWatchlist}
+              index={2}
             />
-          ))}
-        </div>
-      </section>
-    </div>
+
+            <AnimatedStockSection
+              title="Top Losers"
+              stocks={topLosers}
+              toggleWatchlist={toggleWatchlist}
+              isInWatchlist={isInWatchlist}
+              index={3}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </PageTransition>
   )
 }
 

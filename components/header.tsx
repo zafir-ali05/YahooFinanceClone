@@ -6,63 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect, useRef } from "react"
 import { StockDetailsModal } from "./stock-details-modal"
-import { getStockQuote } from "@/services/stockService"
+import { getStockQuote, searchStocks } from "@/services/stockService"
 
 interface SearchResult {
   symbol: string
   name: string
 }
-
-const STOCK_SYMBOLS = [
-  "AAPL",
-  "MSFT",
-  "GOOGL",
-  "AMZN",
-  "NVDA",
-  "META",
-  "TSLA",
-  "JPM",
-  "V",
-  "PG",
-  "JNJ",
-  "UNH",
-  "MA",
-  "HD",
-  "ADBE",
-  "CRM",
-  "NFLX",
-  "DIS",
-  "CSCO",
-  "VZ",
-  "WMT",
-  "KO",
-  "PEP",
-  "INTC",
-  "AMD",
-  "ORCL",
-  "IBM",
-  "QCOM",
-  "TXN",
-  "PYPL",
-  "COST",
-  "NKE",
-  "MCD",
-  "SBUX",
-  "BA",
-  "CAT",
-  "GS",
-  "MS",
-  "C",
-  "BAC",
-  "XOM",
-  "CVX",
-  "WFC",
-  "T",
-  "CMCSA",
-  "ADSK",
-  "INTU",
-  "NOW",
-]
 
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -92,16 +41,23 @@ export function Header() {
   }, [])
 
   useEffect(() => {
-    const filterStocks = () => {
-      const filtered = STOCK_SYMBOLS.filter(
-        (symbol) =>
-          symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          getCompanyName(symbol).toLowerCase().includes(searchQuery.toLowerCase()),
-      ).map((symbol) => ({
-        symbol,
-        name: getCompanyName(symbol),
-      }))
-      setSearchResults(filtered)
+    const filterStocks = async () => {
+      if (searchQuery.length < 2) {
+        setSearchResults([])
+        return
+      }
+      try {
+        const results = await searchStocks(searchQuery)
+        setSearchResults(
+          results.map((stock) => ({
+            symbol: stock.symbol,
+            name: stock.companyName,
+          })),
+        )
+      } catch (error) {
+        console.error("Error searching stocks:", error)
+        setSearchResults([])
+      }
     }
 
     filterStocks()
@@ -109,19 +65,7 @@ export function Header() {
 
   const handleSearchItemClick = async (symbol: string) => {
     try {
-      const quoteData = await getStockQuote(symbol)
-      const stockData = {
-        symbol,
-        name: getCompanyName(symbol),
-        price: quoteData.last[0],
-        change: ((quoteData.last[0] - quoteData.mid[0]) / quoteData.mid[0]) * 100,
-        ask: quoteData.ask[0],
-        askSize: quoteData.askSize[0],
-        bid: quoteData.bid[0],
-        bidSize: quoteData.bidSize[0],
-        volume: quoteData.volume[0],
-        updated: quoteData.updated[0],
-      }
+      const stockData = await getStockQuote(symbol)
       setSelectedStock(stockData)
       setIsModalOpen(true)
       setIsDropdownVisible(false)
@@ -132,13 +76,13 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#E85D4C] text-white">
-      <div className="container flex h-16 items-center px-4">
+    <header className="sticky top-0 z-50 w-full bg-[#f7f5f5] text-black border-b border-black/20">
+      <div className="container flex h-20 items-center px-4">
         <Link
           href="/"
           className="mr-6 flex items-center space-x-2 transition-transform hover:scale-105 active:scale-95"
         >
-          <span className="text-2xl font-extrabold italic text-shadow">Stoxly</span>
+          <span className="text-2xl font-extrabold italic text-shadow text-black">Stoxly</span>
         </Link>
 
         <div className="relative flex w-full max-w-sm items-center space-x-2 mx-4">
@@ -148,7 +92,7 @@ export function Header() {
               ref={inputRef}
               type="search"
               placeholder="Search symbol or company..."
-              className="pl-8 bg-white text-black rounded-xl w-full"
+              className="pl-8 bg-white text-black rounded-md w-full border-0 focus:outline-none focus:ring-0"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsDropdownVisible(true)}
@@ -157,7 +101,7 @@ export function Header() {
           {isDropdownVisible && (
             <div
               ref={dropdownRef}
-              className="absolute top-full left-0 w-full mt-1 bg-white rounded-xl shadow-lg overflow-hidden z-50 max-h-60 overflow-y-auto"
+              className="absolute top-full left-0 w-full mt-1 bg-white rounded-md shadow-lg overflow-hidden z-50 max-h-60 overflow-y-auto"
             >
               {searchResults.length > 0 ? (
                 searchResults.map((result) => (
@@ -180,97 +124,38 @@ export function Header() {
         <nav className="flex items-center space-x-6 ml-auto">
           <Link
             href="/"
-            className="text-sm font-medium transition-colors hover:text-white/80 hover:underline underline-offset-4 flex items-center"
+            className="text-sm font-medium transition-colors hover:text-black/80 hover:underline underline-offset-4 flex items-center"
           >
             <Home className="mr-1 h-4 w-4" />
             Home
           </Link>
           <Link
             href="/watchlist"
-            className="text-sm font-medium transition-colors hover:text-white/80 hover:underline underline-offset-4 flex items-center"
+            className="text-sm font-medium transition-colors hover:text-black/80 hover:underline underline-offset-4 flex items-center"
           >
             <Eye className="mr-1 h-4 w-4" />
             Watchlist
           </Link>
           <Link
             href="/portfolio"
-            className="text-sm font-medium transition-colors hover:text-white/80 hover:underline underline-offset-4 flex items-center"
+            className="text-sm font-medium transition-colors hover:text-black/80 hover:underline underline-offset-4 flex items-center"
           >
             <Folder className="mr-1 h-4 w-4" />
             Portfolio
           </Link>
           <Button
             variant="secondary"
-            className="bg-[#943024] text-white hover:bg-[#7A271E] transition-colors active:scale-95"
+            className="bg-slate-200 text-gray-800 hover:bg-slate-300 transition-colors active:scale-95"
           >
             Sign in
           </Button>
         </nav>
       </div>
       {selectedStock && (
-        <StockDetailsModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          stock={selectedStock}
-          portfolioShares={0}
-        />
+        <StockDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} stock={selectedStock} />
       )}
     </header>
   )
-}
-
-export function getCompanyName(symbol: string): string {
-  const companies: { [key: string]: string } = {
-    AAPL: "Apple Inc.",
-    MSFT: "Microsoft Corporation",
-    GOOGL: "Alphabet Inc.",
-    AMZN: "Amazon.com Inc.",
-    NVDA: "NVIDIA Corporation",
-    META: "Meta Platforms Inc.",
-    TSLA: "Tesla Inc.",
-    JPM: "JPMorgan Chase & Co.",
-    V: "Visa Inc.",
-    PG: "Procter & Gamble Co.",
-    JNJ: "Johnson & Johnson",
-    UNH: "UnitedHealth Group Inc.",
-    MA: "Mastercard Inc.",
-    HD: "The Home Depot Inc.",
-    ADBE: "Adobe Inc.",
-    CRM: "Salesforce Inc.",
-    NFLX: "Netflix Inc.",
-    DIS: "The Walt Disney Company",
-    CSCO: "Cisco Systems Inc.",
-    VZ: "Verizon Communications Inc.",
-    WMT: "Walmart Inc.",
-    KO: "The Coca-Cola Company",
-    PEP: "PepsiCo Inc.",
-    INTC: "Intel Corporation",
-    AMD: "Advanced Micro Devices Inc.",
-    ORCL: "Oracle Corporation",
-    IBM: "International Business Machines Corporation",
-    QCOM: "Qualcomm Inc.",
-    TXN: "Texas Instruments Inc.",
-    PYPL: "PayPal Holdings Inc.",
-    COST: "Costco Wholesale Corporation",
-    NKE: "Nike Inc.",
-    MCD: "McDonald's Corporation",
-    SBUX: "Starbucks Corporation",
-    BA: "The Boeing Company",
-    CAT: "Caterpillar Inc.",
-    GS: "The Goldman Sachs Group Inc.",
-    MS: "Morgan Stanley",
-    C: "Citigroup Inc.",
-    BAC: "Bank of America Corporation",
-    XOM: "Exxon Mobil Corporation",
-    CVX: "Chevron Corporation",
-    WFC: "Wells Fargo & Company",
-    T: "AT&T Inc.",
-    CMCSA: "Comcast Corporation",
-    ADSK: "Autodesk Inc.",
-    INTU: "Intuit Inc.",
-    NOW: "ServiceNow Inc.",
-  }
-  return companies[symbol] || symbol
 }
 
 const textShadowStyle = `
@@ -281,4 +166,5 @@ const textShadowStyle = `
 
 export const headerStyles = textShadowStyle
 
+export { Header }
 

@@ -4,6 +4,8 @@ import "./globals.css"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { WatchlistProvider } from "@/contexts/WatchlistContext"
+import { AnimatePresence } from "framer-motion"
+import { AIChatInterface } from "@/components/ai-chat-interface"
 import type React from "react"
 
 const montserrat = Montserrat({
@@ -28,8 +30,11 @@ export default function RootLayout({
       <body className={`${montserrat.variable} font-montserrat min-h-screen flex flex-col`}>
         <WatchlistProvider>
           <Header />
-          <main className="flex-grow bg-white">{children}</main>
+          <AnimatePresence mode="wait" initial={false}>
+            <main className="flex-grow bg-[#f7f5f5]">{children}</main>
+          </AnimatePresence>
           <Footer />
+          <AIChatInterface />
         </WatchlistProvider>
       </body>
     </html>

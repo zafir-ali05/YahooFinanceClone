@@ -1,138 +1,96 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { StockDetailsModal } from "./stock-details-modal"
-import { getStockQuote, subscribeToRealtimeUpdates } from "@/services/stockService"
 import { useWatchlist } from "@/contexts/WatchlistContext"
-import { getCompanyName } from "@/components/header"
+import type { StockQuote, IndexQuote } from "@/services/stockService"
+import { motion } from "framer-motion"
 
 interface StockCardProps {
-  symbol: string
-  name: string
+  stock: StockQuote | IndexQuote
   onWatchlistToggle?: (symbol: string) => void
   isInWatchlist?: boolean
   shares?: number
+  index: number
 }
 
-export function StockCard({ symbol, name, onWatchlistToggle, isInWatchlist = false, shares = 0 }: StockCardProps) {
+export function StockCard({ stock, onWatchlistToggle, isInWatchlist = false, shares = 0, index }: StockCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [quoteData, setQuoteData] = useState<any>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const { getPortfolioShares } = useWatchlist()
-
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchQuote = async () => {
-      try {
-        const data = await getStockQuote(symbol)
-        if (isMounted) {
-          setQuoteData(data)
-          setIsLoading(false)
-        }
-      } catch (error) {
-        console.error("Error fetching quote:", error)
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    fetchQuote()
-
-    const unsubscribe = subscribeToRealtimeUpdates([symbol], (data) => {
-      if (isMounted) {
-        setQuoteData(data)
-      }
-    })
-
-    return () => {
-      isMounted = false
-      unsubscribe()
-    }
-  }, [symbol])
 
   const handleCardClick = () => {
     setIsModalOpen(true)
   }
 
-  if (isLoading) {
-    return (
-      <div className="rounded-xl border bg-white/20 p-4 animate-pulse">
-        <div className="h-16"></div>
-      </div>
-    )
-  }
-
-  const price = quoteData?.last?.[0] || 0
-  const previousPrice = quoteData?.mid?.[0] || 0
-  const change = ((price - previousPrice) / previousPrice) * 100
-  const portfolioShares = getPortfolioShares(symbol)
+  const portfolioShares = "companyName" in stock ? getPortfolioShares(stock.symbol) : 0
 
   return (
     <>
-      <div
-        className="rounded-xl border bg-white/20 p-4 hover:bg-white/30 transition-colors cursor-pointer overflow-hidden"
-        onClick={handleCardClick}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+        transition={{ duration: 0.5 }}
       >
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="font-bold text-white">{symbol}</h3>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 hover:bg-white/10"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onWatchlistToggle?.(symbol)
-                      }}
-                    >
-                      <Star className={`h-4 w-4 ${isInWatchlist ? "fill-yellow-400 text-yellow-400" : "text-white"}`} />
-                      <span className="sr-only">{isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>{isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+        <div
+          className="rounded-lg border border-gray-200 bg-white p-3 hover:bg-gray-50 transition-colors cursor-pointer overflow-hidden"
+          onClick={handleCardClick}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-gray-800 text-sm">{stock.symbol}</h3>
+                {"companyName" in stock && onWatchlistToggle && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 hover:bg-gray-100"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onWatchlistToggle(stock.symbol)
+                          }}
+                        >
+                          <Star
+                            className={`h-3 w-3 ${isInWatchlist ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`}
+                          />
+                          <span className="sr-only">
+                            {isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+                          </span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>{isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+              <p className="text-xs text-gray-600">{"companyName" in stock ? stock.companyName : stock.name}</p>
+              {portfolioShares > 0 && <p className="text-xs text-gray-600 mt-1">Shares: {portfolioShares}</p>}
             </div>
-            <p className="text-sm text-white/80">{getCompanyName(symbol)}</p>
-            {portfolioShares > 0 && <p className="text-sm text-white/80 mt-1">Shares: {portfolioShares}</p>}
-          </div>
-          <div className="text-right">
-            <p className="font-bold text-white">${price.toFixed(2)}</p>
-            <p className={`text-sm ${change >= 0 ? "text-green-400" : "text-red-500"}`}>
-              {change >= 0 ? "+" : ""}
-              {change.toFixed(2)}%
-            </p>
-            {portfolioShares > 0 && (
-              <p className="text-sm text-white/80 mt-1">Value: ${(price * portfolioShares).toFixed(2)}</p>
-            )}
+            <div className="text-right">
+              <p className="font-bold text-gray-800 text-sm">${stock.price.toFixed(2)}</p>
+              <p className={`text-xs ${stock.changePercent >= 0 ? "text-green-600" : "text-red-600"}`}>
+                {stock.changePercent >= 0 ? "+" : ""}
+                {stock.changePercent.toFixed(2)}%
+              </p>
+              {portfolioShares > 0 && (
+                <p className="text-xs text-gray-600 mt-1">Value: ${(stock.price * portfolioShares).toFixed(2)}</p>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      {quoteData && (
+      </motion.div>
+      {"companyName" in stock && (
         <StockDetailsModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          stock={{
-            symbol,
-            name,
-            price: quoteData.last[0],
-            change,
-            ask: quoteData.ask[0],
-            askSize: quoteData.askSize[0],
-            bid: quoteData.bid[0],
-            bidSize: quoteData.bidSize[0],
-            volume: quoteData.volume[0],
-            updated: quoteData.updated[0],
-          }}
+          stock={stock}
           portfolioShares={portfolioShares}
         />
       )}

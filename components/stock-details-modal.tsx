@@ -1,57 +1,25 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { formatLargeNumber, subscribeToRealtimeUpdates } from "@/services/stockService"
+import { formatLargeNumber } from "@/services/stockService"
 import { Star, Plus, Minus } from "lucide-react"
 import { useWatchlist } from "@/contexts/WatchlistContext"
-import { getCompanyName } from "@/components/header" // Updated import statement
+import type { StockQuote } from "@/services/stockService"
 
 interface StockDetailsModalProps {
   isOpen: boolean
   onClose: () => void
-  stock: {
-    symbol: string
-    name: string
-    price: number
-    change: number
-    ask: number
-    askSize: number
-    bid: number
-    bidSize: number
-    volume: number
-    updated: number
-  }
+  stock: StockQuote
   portfolioShares: number
 }
 
-export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: StockDetailsModalProps) {
+export function StockDetailsModal({ isOpen, onClose, stock, portfolioShares }: StockDetailsModalProps) {
   const [timeFilter, setTimeFilter] = useState<"1D" | "7D" | "1M" | "1Y" | "ALL">("1M")
-  const { toggleWatchlist, isInWatchlist, addToPortfolio, removeFromPortfolio, getPortfolioShares } = useWatchlist()
-  const [stock, setStock] = useState(initialStock)
+  const { toggleWatchlist, isInWatchlist, addToPortfolio, removeFromPortfolio } = useWatchlist()
   const [shares, setShares] = useState(1)
   const [confirmationMessage, setConfirmationMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    const unsubscribe = subscribeToRealtimeUpdates([stock.symbol], (data) => {
-      setStock((prevStock) => ({
-        ...prevStock,
-        price: data.last[0],
-        change: ((data.last[0] - data.mid[0]) / data.mid[0]) * 100,
-        ask: data.ask[0],
-        askSize: data.askSize[0],
-        bid: data.bid[0],
-        bidSize: data.bidSize[0],
-        volume: data.volume[0],
-        updated: data.updated[0],
-      }))
-    })
-
-    return () => {
-      unsubscribe()
-    }
-  }, [stock.symbol])
 
   const handleSharesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value, 10)
@@ -113,12 +81,9 @@ export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: Stoc
     return { data, color: getTrendColor(data) }
   }
 
-  const lastUpdated = new Date(stock.updated).toLocaleString()
-  const portfolioShares = getPortfolioShares(stock.symbol)
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="rounded-xl sm:max-w-[900px] bg-[#c96357] text-white border-none overflow-hidden">
+      <DialogContent className="sm:max-w-[900px] bg-[#c96357] text-white border-none overflow-hidden rounded-[40px]">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex flex-col">
@@ -141,10 +106,9 @@ export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: Stoc
                   </span>
                 </Button>
               </div>
-              <DialogDescription className="text-white mt-1">{getCompanyName(stock.symbol)}</DialogDescription>
+              <DialogDescription className="text-white mt-1">{stock.companyName}</DialogDescription>
             </div>
           </div>
-          <DialogDescription className="text-white/80 text-sm mt-2">Last Updated: {lastUpdated}</DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
           <div className="space-y-4">
@@ -154,21 +118,9 @@ export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: Stoc
             </div>
             <div className="grid grid-cols-2 items-center gap-4">
               <span className="font-medium">Change:</span>
-              <span className={stock.change >= 0 ? "text-green-300" : "text-[#FF4136]"}>
-                {stock.change >= 0 ? "+" : ""}
-                {stock.change.toFixed(2)}%
-              </span>
-            </div>
-            <div className="grid grid-cols-2 items-center gap-4">
-              <span className="font-medium">Ask:</span>
-              <span>
-                ${stock.ask.toFixed(2)} × {formatLargeNumber(stock.askSize)}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 items-center gap-4">
-              <span className="font-medium">Bid:</span>
-              <span>
-                ${stock.bid.toFixed(2)} × {formatLargeNumber(stock.bidSize)}
+              <span className={stock.changePercent >= 0 ? "text-green-300" : "text-[#FF4136]"}>
+                {stock.changePercent >= 0 ? "+" : ""}
+                {stock.changePercent.toFixed(2)}%
               </span>
             </div>
             <div className="grid grid-cols-2 items-center gap-4">
@@ -251,6 +203,16 @@ export function StockDetailsModal({ isOpen, onClose, stock: initialStock }: Stoc
             </div>
           </div>
         </div>
+        <style jsx global>{`
+          .rounded-[40px] > :first-child {
+            border-top-left-radius: 40px;
+            border-top-right-radius: 40px;
+          }
+          .rounded-[40px] > :last-child {
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+          }
+        `}</style>
       </DialogContent>
     </Dialog>
   )
