@@ -1,4 +1,3 @@
-// Simulated API base URL (replace with your actual backend URL when deployed)
 const API_BASE_URL = "/api"
 
 export interface StockQuote {

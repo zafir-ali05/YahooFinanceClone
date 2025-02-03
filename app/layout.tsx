@@ -1,14 +1,9 @@
 import type { Metadata } from "next"
 import { Montserrat } from "next/font/google"
 import "./globals.css"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { WatchlistProvider } from "@/contexts/WatchlistContext"
-import { AnimatePresence } from "framer-motion"
-import { AIChatInterface } from "@/components/ai-chat-interface"
-import type React from "react"
-import { ScrollToTop } from "@/components/scroll-to-top"
-import { usePathname } from "next/navigation"
+import { LayoutContent } from "./components/layout-content"
+import type React from "react" // Import React
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,27 +30,6 @@ export default function RootLayout({
         </WatchlistProvider>
       </body>
     </html>
-  )
-}
-
-function LayoutContent({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const isSignInPage = pathname === "/signin"
-
-  return (
-    <>
-      {!isSignInPage && <Header />}
-      <ScrollToTop />
-      <AnimatePresence mode="wait" initial={false}>
-        <main className="flex-grow bg-[#f7f5f5]">{children}</main>
-      </AnimatePresence>
-      {!isSignInPage && (
-        <>
-          <Footer />
-          <AIChatInterface />
-        </>
-      )}
-    </>
   )
 }
 
