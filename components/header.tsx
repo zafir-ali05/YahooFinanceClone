@@ -152,7 +152,7 @@ export function Header() {
         </nav>
       </div>
       {selectedStock && (
-        <StockDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} stock={selectedStock} />
+        <StockDetailsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} stock={selectedStock} portfolioShares={0} />
       )}
     </header>
   )
@@ -166,5 +166,4 @@ const textShadowStyle = `
 
 export const headerStyles = textShadowStyle
 
-export { Header }
 
